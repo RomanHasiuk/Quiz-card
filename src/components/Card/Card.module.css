@@ -1,0 +1,17 @@
+.quizCard {
+  min-height: 250px; /* Задаємо мінімальну висоту, щоб картка не "стрибала" */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem; /* Відступ від наступних елементів */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Легка тінь */
+  transition: all 0.3s ease;
+}
+
+.answerBox {
+  margin-top: 1.5rem;
+  text-align: left; /* Вирівнюємо текст відповіді по лівому краю */
+  width: 80%;
+  max-width: 600px; /* Обмеження ширини для кращої читабельності */
+}

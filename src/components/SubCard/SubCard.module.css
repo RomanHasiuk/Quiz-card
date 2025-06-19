@@ -1,0 +1,42 @@
+.subQuizCard {
+  min-height: 180px;
+  /* width: 80%; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #f5f5f5;
+  border: 1px solid #dbdbdb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Стиль для "матового скла" */
+.blurredQuestion {
+  filter: blur(4px);
+  transition: filter 0.3s ease-in-out;
+  user-select: none;
+  pointer-events: none;
+}
+
+.answerBox {
+  margin-top: 1rem;
+  text-align: left;
+  width: 80%;
+}
+
+/* Анімація для входу */
+.sub-card-enter {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%); opacity: 0;
+  }
+  to {
+    transform: translateY(0); opacity: 1;
+  }
+}

@@ -1,0 +1,969 @@
+
+=====���������====== src/App.css =====���������======
+
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400;1,700&family=Comfortaa:wght@300..700&family=Cormorant+Infant:ital,wght@0,300..700;1,300..700&family=Great+Vibes&family=Rubik+Doodle+Shadow&family=Rubik+Scribble&family=Sofia+Sans+Semi+Condensed:ital,wght@0,1..1000;1,1..1000&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  font-family: "Sofia Sans Semi Condensed", "Comfortaa", "Cormorant Infant", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.rubik-font, h1, h2, h3 {
+  font-family: "Rubik Doodle Shadow", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+}
+
+.comfortaa-font {
+  font-family: "Comfortaa", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+}
+
+.cormorant-infant-font {
+  font-family: "Cormorant Infant", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.great-vibes-font {
+  font-family: "Great Vibes", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* .logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */
+
+/* Анімації для карток */
+.card-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.sub-card-enter {
+  transform: translateY(100%) scale(0.9);
+  opacity: 0;
+  filter: blur(5px);
+}
+
+.sub-card-enter-active {
+  transform: translateY(0) scale(0.9);
+  opacity: 1;
+  filter: blur(0);
+}
+
+.sub-card-up {
+  transform: translateY(-50%) scale(1);
+}
+
+.collapsed-main-question {
+  transition: all 0.3s ease;
+  transform: scale(0.85);
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.sub-card-bounce {
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.main-card-exit {
+  animation: shrink 0.3s ease forwards;
+}
+
+@keyframes shrink {
+  to { 
+    transform: scale(0); 
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.error-notification {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.error-notification:hover {
+  background-color: #f14668;
+}
+
+/* Стилі для позиціонування допоміжних карток */
+.sub-card {
+  transition: all 0.3s ease;
+  width: 80%;
+   margin: 0 auto;
+}
+
+.sub-card-bottom {
+  margin-top: 1.5rem;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.sub-card-top {
+  margin-top: 0;
+  transform: translateY(-1%);
+  opacity: 1;
+}
+
+/* Анімація для виходу картки */
+.main-card-exit {
+  animation: shrink 0.3s ease forwards;
+}
+
+@keyframes shrink {
+  to { 
+    transform: scale(0); 
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Стиль для згорнутого головного питання */
+.collapsed-main-question {
+  transition: all 0.3s ease;
+  transform: scale(0.85);
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  color: #666;
+  padding: 1rem;
+  /* background-color: #f8f9fa; */
+  /* border-radius: 5px; */
+}
+
+=====���������====== src/App.tsx =====���������======
+
+// src/App.tsx
+import { useState } from 'react';
+import './App.css';
+import CategorySelect from './components/CategorySelect/CategorySelect';
+import useQuizData from './hooks/useQuizData';
+import Card from './components/Card/Card';
+import SubCard from './components/SubCard/SubCard';
+
+type AnswerKey = `main-${string}` | `sub-${string}-${number}`;
+
+function App() {
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const { data: quizData, loading, error, reshuffleData } = useQuizData(selectedTopic);
+
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
+  const [mainAnswerShown, setMainAnswerShown] = useState<boolean>(false);
+  const [showSubQuestions, setShowSubQuestions] = useState<boolean>(false);
+  const [currentSubCardIndex, setCurrentSubCardIndex] = useState<number>(0);
+  const [mainAnswerRecorded, setMainAnswerRecorded] = useState<boolean>(false);
+  const [answers, setAnswers] = useState<Record<AnswerKey, 'known' | 'unknown'>>({});
+  
+  // Стани для анімацій
+  const [isMainCollapsed, setIsMainCollapsed] = useState<boolean>(false);
+  const [subCardPosition, setSubCardPosition] = useState<'bottom' | 'top'>('bottom');
+  const [subCardBlurred, setSubCardBlurred] = useState<boolean>(true);
+  const [subAnswerShown, setSubAnswerShown] = useState<boolean>(false);
+  const [exitAnimation, setExitAnimation] = useState<boolean>(false);
+  
+  const handleSelectTopic = (topic: string) => {
+    setSelectedTopic(topic);
+    resetAllStates();
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedTopic(null);
+    // setError(null);
+    resetAllStates();
+  };
+
+  const handleRestartTopic = () => {
+    resetAllStates();
+    reshuffleData();
+  };
+
+  const resetAllStates = () => {
+    setCurrentCardIndex(0);
+    setMainAnswerShown(false);
+    setShowSubQuestions(false);
+    setCurrentSubCardIndex(0);
+    setMainAnswerRecorded(false);
+    setIsMainCollapsed(false);
+    setSubCardPosition('bottom');
+    setSubCardBlurred(true);
+    setSubAnswerShown(false);
+    setExitAnimation(false);
+    setAnswers({});
+  };
+
+  const handleMainAnswerShown = () => {
+    setMainAnswerShown(true);
+    // ВИПРАВЛЕНО: додано додаткову перевірку для безпеки
+    if (
+      quizData
+      && currentCardIndex < quizData.length
+      && quizData[currentCardIndex]?.additionalQuestions?.length
+      && quizData[currentCardIndex].additionalQuestions!.length > 0
+    ) {
+      setShowSubQuestions(true);
+      setCurrentSubCardIndex(0);
+    }
+  };
+
+  const handleSubAnswerShown = () => {
+    setSubAnswerShown(true);
+  };
+
+  const handleKnow = () => {
+    if (!mainAnswerRecorded && showSubQuestions) {
+      // Записуємо відповідь для головної картки
+      const mainKey: AnswerKey = `main-${currentCard?.id}`;
+      setAnswers(prev => ({ ...prev, [mainKey]: 'known' }));
+      setMainAnswerRecorded(true);
+      
+      // Піднімаємо допоміжну картку та розблюровуємо питання
+      setIsMainCollapsed(true);
+      setSubCardPosition('top');
+      setSubCardBlurred(false); // Розблюровуємо питання
+    } else if (showSubQuestions && !subCardBlurred) {
+      // Записуємо відповідь для допоміжної картки
+      const subKey: AnswerKey = `sub-${currentCard?.id}-${currentSubCardIndex}`;
+      setAnswers(prev => ({ ...prev, [subKey]: 'known' }));
+      
+      // Перехід до наступного питання
+      handleNextSubQuestion();
+    }
+  };
+
+  const handleDontKnow = () => {
+    if (!mainAnswerRecorded && showSubQuestions) {
+      // Записуємо відповідь для головної картки
+      const mainKey: AnswerKey = `main-${currentCard?.id}`;
+      setAnswers(prev => ({ ...prev, [mainKey]: 'unknown' }));
+      setMainAnswerRecorded(true);
+      
+      // Піднімаємо допоміжну картку та розблюровуємо питання
+      setIsMainCollapsed(true);
+      setSubCardPosition('top');
+      setSubCardBlurred(false); // Розблюровуємо питання
+    } else if (showSubQuestions && !subCardBlurred) {
+      // Записуємо відповідь для допоміжної картки
+      const subKey: AnswerKey = `sub-${currentCard?.id}-${currentSubCardIndex}`;
+      setAnswers(prev => ({ ...prev, [subKey]: 'unknown' }));
+      
+      // Перехід до наступного питання
+      handleNextSubQuestion();
+    }
+  };
+
+  const handleNextSubQuestion = () => {
+    if (quizData && quizData[currentCardIndex]?.additionalQuestions &&
+        currentSubCardIndex < quizData[currentCardIndex].additionalQuestions!.length - 1) {
+      // Перехід до наступного допоміжного питання
+      setCurrentSubCardIndex(prevIndex => prevIndex + 1);
+      setSubCardBlurred(true); // Нове питання заблюроване
+      setSubAnswerShown(false); // Скидаємо показ відповіді
+      
+      // Додаємо затримку для коректного відображення анімації
+      setTimeout(() => {
+        // Після переходу автоматично показуємо питання (розблюровуємо)
+        setSubCardBlurred(false);
+      }, 10);
+    } else {
+      // Перехід до наступної головної картки
+      setExitAnimation(true);
+      setTimeout(() => {
+        handleNextMainCard();
+      }, 300);
+    }
+  };
+
+  const handleNextMainCard = () => {
+    setMainAnswerShown(false);
+    setShowSubQuestions(false);
+    setCurrentSubCardIndex(0);
+    setMainAnswerRecorded(false);
+    setIsMainCollapsed(false);
+    setSubCardPosition('bottom');
+    setSubCardBlurred(true);
+    setSubAnswerShown(false);
+    setCurrentCardIndex(prevIndex => prevIndex + 1);
+    setExitAnimation(false);
+  };
+
+  const currentCard = quizData?.[currentCardIndex] || null;
+  const currentSubCard = currentCard?.additionalQuestions?.[currentSubCardIndex] || null;
+
+  // Підрахунок питань
+  const totalMainQuestions = quizData?.length || 0;
+  const totalSubQuestions = quizData?.reduce((acc, card) => 
+    acc + (card.additionalQuestions?.length || 0), 0) || 0;
+  const totalAllQuestions = totalMainQuestions + totalSubQuestions;
+
+  // Поточний номер питання
+  const getCurrentQuestionNumber = () => {
+    if (!showSubQuestions) {
+      return `${currentCardIndex + 1}`;
+    } else {
+      return `${currentCardIndex + 1}.${currentSubCardIndex + 1}`;
+    }
+  };
+
+  const getCurrentTotalQuestions = () => {
+    if (!showSubQuestions) {
+      return totalMainQuestions;
+    } else {
+      return currentCard?.additionalQuestions?.length || 0;
+    }
+  };
+
+  // Підрахунок результатів
+  const mainKnownCount = quizData
+    ? quizData.filter(card => answers[`main-${card.id}` as AnswerKey] === 'known').length
+    : 0;
+  
+  const subKnownCount = Object.keys(answers).filter(key => 
+    key.startsWith('sub-') && answers[key as AnswerKey] === 'known'
+  ).length;
+
+  const totalKnownCount = mainKnownCount + subKnownCount;
+  const percentage = totalAllQuestions > 0 ? Math.round((totalKnownCount / totalAllQuestions) * 100) : 0;
+
+  // Списки невідомих питань
+  const unknownMainList = quizData 
+    ? quizData
+        .filter(card => answers[`main-${card.id}` as AnswerKey] === 'unknown')
+        .map(card => card.originalIndex! + 1)
+        .sort((a, b) => a - b)
+    : [];
+
+  const unknownSubList = Object.keys(answers)
+  .filter(key => key.startsWith('sub-') && answers[key as AnswerKey] === 'unknown')
+  .map(key => {
+    console.log('Processing key:', key);
+    
+    // Правильний парсинг: key має формат 'sub-cardId-subIndex'
+    // Де cardId може містити дефіси (наприклад, 'newbie-q3')
+    const match = key.match(/^sub-(.+)-(\d+)$/);
+    
+    if (match) {
+      const cardId = match[1]; // 'newbie-q3'
+      const subIndex = parseInt(match[2]); // 0, 1, 2...
+      
+      console.log('Parsed - cardId:', cardId, 'subIndex:', subIndex);
+      
+      const card = quizData?.find(c => c.id === cardId);
+      console.log('Found card:', card);
+      
+      if (card && typeof card.originalIndex === 'number') {
+        const result = `${card.originalIndex + 1}.${subIndex + 1}`;
+        console.log('Generated result:', result);
+        return result;
+      }
+    }
+    
+    console.log('No match or card not found for key:', key);
+    return null;
+  })
+  .filter((item): item is string => item !== null)
+  .sort((a, b) => {
+    const [aMain, aSub] = a.split('.').map(Number);
+    const [bMain, bSub] = b.split('.').map(Number);
+    if (aMain !== bMain) return aMain - bMain;
+    return aSub - bSub;
+  });
+
+  return (
+    <div className="container is-fluid">
+      {selectedTopic && quizData && !loading && !error ? (
+        <>
+          <h2 className="subtitle has-text-centered">
+            Тема: <span className="has-text-info">{selectedTopic}</span>
+          </h2>
+          <p className="has-text-centered has-text-grey-dark">
+            {currentCardIndex < quizData.length 
+              ? `Питання ${getCurrentQuestionNumber()} з ${getCurrentTotalQuestions()} у темі`
+              : `Знаєш ${totalKnownCount} з ${totalAllQuestions}`
+            }
+          </p>
+          <hr />
+        </>
+      ) : (
+        <h1 className="title has-text-centered has-text-primary mb-1">
+          Флеш-картки для співбесіди
+        </h1>
+      )}
+      
+      {error && (
+        <div 
+          className="notification is-danger error-notification" 
+          onClick={handleBackToCategories}
+        >
+          {error} (Натисніть, щоб повернутися до тем)
+        </div>
+      )}
+
+      {loading && (
+        <progress className="progress is-small is-primary" max="100">
+          Завантаження...
+        </progress>
+      )}
+      
+      {!selectedTopic && !loading && !error && (
+        <CategorySelect onSelectTopic={handleSelectTopic} />
+      )}
+
+      {selectedTopic && quizData && !loading && !error && (
+        <div className="box is-flex is-flex-direction-column">
+          {quizData.length > 0 && currentCardIndex < quizData.length ? (
+            <>
+              {/* Головна картка */}
+              {!exitAnimation && (
+                <div className={exitAnimation ? "main-card-exit" : ""}>
+                  {isMainCollapsed ? (
+                    <div className="collapsed-main-question comfortaa-font">
+                      {currentCard?.mainQuestion}
+                    </div>
+                  ) : (
+                    <Card
+                      card={currentCard!}
+                      onAnswerShown={handleMainAnswerShown}
+                      showAnswer={mainAnswerShown}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Допоміжна картка */}
+              {showSubQuestions && currentSubCard && (
+                <div
+                  className={`sub-card is-flex ${subCardPosition === 'top' ? 'sub-card-top' : 'sub-card-bottom'}`}
+                >
+                  <SubCard 
+                    subCard={currentSubCard}
+                    showAnswer={subAnswerShown}
+                    onAnswerShown={handleSubAnswerShown}
+                    blurred={subCardBlurred}
+                  />
+                </div>
+              )}
+
+              {/* Кнопки "Знаю"/"Не знаю" */}
+              {(mainAnswerShown && !mainAnswerRecorded) || 
+               (showSubQuestions && !subCardBlurred && subAnswerShown) ? (
+                <div className="buttons is-centered mt-4">
+                  <button 
+                    className="button rubik-font is-primary mr-2"
+                    onClick={handleKnow}
+                  >
+                    Знаю
+                  </button>
+                  <button 
+                    className="button rubik-font is-primary"
+                    onClick={handleDontKnow}
+                  >
+                    Не знаю
+                  </button>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="has-text-centered">
+              <p className="title is-4">Усі питання пройдено!</p>
+              <p className="subtitle is-5">Результат: {percentage}%</p>
+              
+              {(unknownMainList.length > 0 || unknownSubList.length > 0) && (
+                <div className="notification is-warning is-light mt-4">
+                  <p className="subtitle is-6">Питання, на які ви відповіли "Не знаю":</p>
+                  {unknownMainList.length > 0 && (
+                    <p><strong>Головні:</strong> {unknownMainList.join(', ')}</p>
+                  )}
+                  {unknownSubList.length > 0 && (
+                    <p><strong>Додаткові:</strong> {unknownSubList.join(', ')}</p>
+                  )}
+                </div>
+              )}
+              
+              <button className="button rubik-font is-primary mt-4" onClick={handleRestartTopic}>
+                Пройти знову
+              </button>
+            </div>
+          )}
+
+          <div className="has-text-centered mt-5">
+            <button className="button rubik-font is-link is-light" onClick={handleBackToCategories}>
+              Змінити тему
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+=====���������====== src/assets/react.svg =====���������======
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="35.93" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 228"><path fill="#00D8FF" d="M210.483 73.824a171.49 171.49 0 0 0-8.24-2.597c.465-1.9.893-3.777 1.273-5.621c6.238-30.281 2.16-54.676-11.769-62.708c-13.355-7.7-35.196.329-57.254 19.526a171.23 171.23 0 0 0-6.375 5.848a155.866 155.866 0 0 0-4.241-3.917C100.759 3.829 77.587-4.822 63.673 3.233C50.33 10.957 46.379 33.89 51.995 62.588a170.974 170.974 0 0 0 1.892 8.48c-3.28.932-6.445 1.924-9.474 2.98C17.309 83.498 0 98.307 0 113.668c0 15.865 18.582 31.778 46.812 41.427a145.52 145.52 0 0 0 6.921 2.165a167.467 167.467 0 0 0-2.01 9.138c-5.354 28.2-1.173 50.591 12.134 58.266c13.744 7.926 36.812-.22 59.273-19.855a145.567 145.567 0 0 0 5.342-4.923a168.064 168.064 0 0 0 6.92 6.314c21.758 18.722 43.246 26.282 56.54 18.586c13.731-7.949 18.194-32.003 12.4-61.268a145.016 145.016 0 0 0-1.535-6.842c1.62-.48 3.21-.974 4.76-1.488c29.348-9.723 48.443-25.443 48.443-41.52c0-15.417-17.868-30.326-45.517-39.844Zm-6.365 70.984c-1.4.463-2.836.91-4.3 1.345c-3.24-10.257-7.612-21.163-12.963-32.432c5.106-11 9.31-21.767 12.459-31.957c2.619.758 5.16 1.557 7.61 2.4c23.69 8.156 38.14 20.213 38.14 29.504c0 9.896-15.606 22.743-40.946 31.14Zm-10.514 20.834c2.562 12.94 2.927 24.64 1.23 33.787c-1.524 8.219-4.59 13.698-8.382 15.893c-8.067 4.67-25.32-1.4-43.927-17.412a156.726 156.726 0 0 1-6.437-5.87c7.214-7.889 14.423-17.06 21.459-27.246c12.376-1.098 24.068-2.894 34.671-5.345a134.17 134.17 0 0 1 1.386 6.193ZM87.276 214.515c-7.882 2.783-14.16 2.863-17.955.675c-8.075-4.657-11.432-22.636-6.853-46.752a156.923 156.923 0 0 1 1.869-8.499c10.486 2.32 22.093 3.988 34.498 4.994c7.084 9.967 14.501 19.128 21.976 27.15a134.668 134.668 0 0 1-4.877 4.492c-9.933 8.682-19.886 14.842-28.658 17.94ZM50.35 144.747c-12.483-4.267-22.792-9.812-29.858-15.863c-6.35-5.437-9.555-10.836-9.555-15.216c0-9.322 13.897-21.212 37.076-29.293c2.813-.98 5.757-1.905 8.812-2.773c3.204 10.42 7.406 21.315 12.477 32.332c-5.137 11.18-9.399 22.249-12.634 32.792a134.718 134.718 0 0 1-6.318-1.979Zm12.378-84.26c-4.811-24.587-1.616-43.134 6.425-47.789c8.564-4.958 27.502 2.111 47.463 19.835a144.318 144.318 0 0 1 3.841 3.545c-7.438 7.987-14.787 17.08-21.808 26.988c-12.04 1.116-23.565 2.908-34.161 5.309a160.342 160.342 0 0 1-1.76-7.887Zm110.427 27.268a347.8 347.8 0 0 0-7.785-12.803c8.168 1.033 15.994 2.404 23.343 4.08c-2.206 7.072-4.956 14.465-8.193 22.045a381.151 381.151 0 0 0-7.365-13.322Zm-45.032-43.861c5.044 5.465 10.096 11.566 15.065 18.186a322.04 322.04 0 0 0-30.257-.006c4.974-6.559 10.069-12.652 15.192-18.18ZM82.802 87.83a323.167 323.167 0 0 0-7.227 13.238c-3.184-7.553-5.909-14.98-8.134-22.152c7.304-1.634 15.093-2.97 23.209-3.984a321.524 321.524 0 0 0-7.848 12.897Zm8.081 65.352c-8.385-.936-16.291-2.203-23.593-3.793c2.26-7.3 5.045-14.885 8.298-22.6a321.187 321.187 0 0 0 7.257 13.246c2.594 4.48 5.28 8.868 8.038 13.147Zm37.542 31.03c-5.184-5.592-10.354-11.779-15.403-18.433c4.902.192 9.899.29 14.978.29c5.218 0 10.376-.117 15.453-.343c-4.985 6.774-10.018 12.97-15.028 18.486Zm52.198-57.817c3.422 7.8 6.306 15.345 8.596 22.52c-7.422 1.694-15.436 3.058-23.88 4.071a382.417 382.417 0 0 0 7.859-13.026a347.403 347.403 0 0 0 7.425-13.565Zm-16.898 8.101a358.557 358.557 0 0 1-12.281 19.815a329.4 329.4 0 0 1-23.444.823c-7.967 0-15.716-.248-23.178-.732a310.202 310.202 0 0 1-12.513-19.846h.001a307.41 307.41 0 0 1-10.923-20.627a310.278 310.278 0 0 1 10.89-20.637l-.001.001a307.318 307.318 0 0 1 12.413-19.761c7.613-.576 15.42-.876 23.31-.876H128c7.926 0 15.743.303 23.354.883a329.357 329.357 0 0 1 12.335 19.695a358.489 358.489 0 0 1 11.036 20.54a329.472 329.472 0 0 1-11 20.722Zm22.56-122.124c8.572 4.944 11.906 24.881 6.52 51.026c-.344 1.668-.73 3.367-1.15 5.09c-10.622-2.452-22.155-4.275-34.23-5.408c-7.034-10.017-14.323-19.124-21.64-27.008a160.789 160.789 0 0 1 5.888-5.4c18.9-16.447 36.564-22.941 44.612-18.3ZM128 90.808c12.625 0 22.86 10.235 22.86 22.86s-10.235 22.86-22.86 22.86s-22.86-10.235-22.86-22.86s10.235-22.86 22.86-22.86Z"></path></svg>
+=====���������====== src/components/Card/Card.module.css =====���������======
+
+.quizCard {
+  min-height: 250px; /* Задаємо мінімальну висоту, щоб картка не "стрибала" */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem; /* Відступ від наступних елементів */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Легка тінь */
+  transition: all 0.3s ease;
+}
+
+.answerBox {
+  margin-top: 1.5rem;
+  text-align: left; /* Вирівнюємо текст відповіді по лівому краю */
+  width: 80%;
+  max-width: 600px; /* Обмеження ширини для кращої читабельності */
+}
+=====���������====== src/components/Card/Card.tsx =====���������======
+
+import React from "react";
+import type { QuizCard } from "../../types/quiz";
+import styles from './Card.module.css';
+
+interface CardProps {
+  card: QuizCard;
+  onAnswerShown: () => void;
+  showAnswer: boolean;
+}
+
+const Card: React.FC<CardProps> = ({ card, onAnswerShown, showAnswer }) => {
+  return (
+    <div className={`card ${styles.quizCard}`}>
+      <div className="card-content">
+        <div className="content is-flex is-flex-direction-column is-align-items-center">
+          <p className="title comfortaa-font is-4 has-text-centered mb-4">
+            {card.mainQuestion}
+          </p>
+          
+          {!showAnswer && (
+            <div className="has-text-centered">
+              <button
+                className="button rubik-font is-primary is-outlined is-large"
+                onClick={onAnswerShown}
+              >
+                Показати відповідь
+              </button>
+            </div>
+          )}
+
+          {showAnswer && (
+            <div className={`notification is-info ${styles.answerBox}`}>
+              <p className="subtitle cormorant-infant-font is-6">Відповідь:</p>
+              <p className="content">{card.mainAnswer}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Card;
+
+=====���������====== src/components/CategorySelect/CategorySelect.tsx =====���������======
+
+import React, { useEffect, useState } from 'react';
+
+interface CategorySelectProps {
+  onSelectTopic: (topic: string) => void;
+}
+
+const CategorySelect: React.FC<CategorySelectProps> = ({ onSelectTopic }) => {
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const response = await fetch(`api/topics.json`);
+        if (!response.ok) {
+          throw new Error('Не вдалося завантажити список тем.');
+        }
+        const data: string[] = await response.json();
+        setAvailableTopics(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Помилка завантаження тем:", err);
+        setError("Не вдалося завантажити доступні теми. Спробуйте пізніше.");
+        setLoading(false);
+      }
+    };
+
+    fetchTopics();
+  }, []);
+    
+  if (loading) {
+    return <progress className="progress is-small is-primary" max="100">Завантаження тем...</progress>;
+  }
+  if (error) {
+    return (
+      <div className="notification is-danger">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="box has-text-centered">
+      <h2 className="subtitle">Оберіть тему вікторини:</h2>
+      <div className="buttons is-centered is-flex-wrap-wrap">
+        {availableTopics.length === 0
+          && <p className="has-text-grey">Немає доступних тем.</p>
+        }
+        {availableTopics.map(topic => (
+          <button
+            key={topic}
+            className="button is-primary is-light is-large m-2"
+            onClick={() => onSelectTopic(topic)}
+          >
+            {topic}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default CategorySelect;
+
+=====���������====== src/components/SubCard/SubCard.module.css =====���������======
+
+.subQuizCard {
+  min-height: 180px;
+  /* width: 80%; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #f5f5f5;
+  border: 1px solid #dbdbdb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Стиль для "матового скла" */
+.blurredQuestion {
+  filter: blur(4px);
+  transition: filter 0.3s ease-in-out;
+  user-select: none;
+  pointer-events: none;
+}
+
+.answerBox {
+  margin-top: 1rem;
+  text-align: left;
+  width: 80%;
+}
+
+/* Анімація для входу */
+.sub-card-enter {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%); opacity: 0;
+  }
+  to {
+    transform: translateY(0); opacity: 1;
+  }
+}
+
+=====���������====== src/components/SubCard/SubCard.tsx =====���������======
+
+import React from "react";
+import type { SubQuestion } from "../../types/quiz";
+import styles from "./SubCard.module.css";
+
+interface SubCardProps {
+  subCard: SubQuestion;
+  showAnswer: boolean;
+  onAnswerShown: () => void;
+  blurred: boolean;
+}
+
+const SubCard: React.FC<SubCardProps> = ({ 
+  subCard, 
+  showAnswer, 
+  onAnswerShown, 
+  blurred
+}) => {
+  return (
+    <div className="card container">
+      <div className="card-content">
+        <div className="content is-flex is-flex-direction-column is-align-items-center">
+          {/* Запитання - завжди видиме, але може бути заблюроване */}
+          <p className={`title comfortaa-font is-4 mb-5 ${blurred ? styles.blurredQuestion : ''}`}>
+            {subCard.question}
+          </p>
+
+          {/* Кнопка "Показати відповідь" - показується лише коли питання не заблюроване і відповідь не показана */}
+          {!showAnswer && !blurred && (
+            <div className="has-text-centered">
+              <button
+                className="button rubik-font is-link is-outlined is-medium"
+                onClick={onAnswerShown}
+              >
+                Показати відповідь
+              </button>
+            </div>
+          )}
+
+          {/* Відповідь - показується лише коли користувач натиснув кнопку */}
+          {showAnswer && (
+            <div className={`notification is-primary ${styles.answerBox}`}>
+              <p className="subtitle cormorant-infant-font is-6">Відповідь:</p>
+              <p className="content">{subCard.answer}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SubCard;
+
+=====���������====== src/hooks/useQuizData.ts =====���������======
+
+import { useState, useEffect } from "react";
+import type { QuizTopicData } from "../types/quiz";
+
+const useQuizData = (topic: string | null) => {
+  const [data, setData] = useState<QuizTopicData | null>(null);
+  const [originalData, setOriginalData] = useState<QuizTopicData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (!topic) {
+      setData(null);
+      setOriginalData(null);
+      setError(null); // Додано очищення помилки
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setData(null);
+
+    const fetchQuizData = async () => {
+      try {
+        const response = await fetch(`api/${topic}.json`);
+        if (!response.ok) {
+          throw new Error(`Не вдалося завантажити дані для теми: ${topic}`);
+        }
+        const jsonData: QuizTopicData = await response.json();
+
+        const withIndexes = jsonData.map((card, index) => ({
+          ...card,
+          originalIndex: index
+        }));
+        
+        setOriginalData(withIndexes);
+        const shuffledData = [...withIndexes].sort(() => Math.random() - 0.5);
+        setData(shuffledData);
+      }
+      catch (err) {
+        console.error("Помилка завантаження даних:", err);
+        setError("Не вдалося завантажити дані вікторини. Спробуйте пізніше.");
+        setData(null);
+        setOriginalData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuizData();
+  }, [topic]);
+  
+  const reshuffleData = () => {
+    if (originalData) {
+      const shuffledData = [...originalData].sort(() => Math.random() - 0.5);
+      setData(shuffledData);
+    }
+  };
+  
+  return { data, loading, error, reshuffleData };
+};
+
+export default useQuizData;
+
+=====���������====== src/index.css =====���������======
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  /* place-items: center; */
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+=====���������====== src/main.tsx =====���������======
+
+// import { StrictMode } from 'react'
+// import { createRoot } from 'react-dom/client'
+import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
+import 'bulma/css/bulma.min.css'; // Імпортуємо Bulma CSS
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+
+=====���������====== src/types/quiz.d.ts =====���������======
+
+/**
+ * Інтерфейс для допоміжного питання (SubCard).
+ */
+export interface SubQuestion {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+/**
+ * Інтерфейс для основної картки питання.
+ */
+export interface QuizCard {
+  id: string;
+  topic: string;
+  mainQuestion: string;
+  mainAnswer: string;
+  additionalQuestions?: SubQuestion[]; // Масив допоміжних питань, опціонально
+  originalIndex?: number; // Для відстеження початкової позиції картки
+}
+
+/**
+ * Інтерфейс для даних цілої теми вікторини (масиву QuizCard).
+ */
+export type QuizTopicData = QuizCard[];
+
+=====���������====== src/vite-env.d.ts =====���������======
+
+/// <reference types="vite/client" />

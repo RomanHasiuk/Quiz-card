@@ -1,7 +1,7 @@
 🚀 FullStack Interview Prep Cards
 
 Live Demo & Project Links
-Live Demo: [Open FullStack Interview Prep Cards](https://RomanHasiuk.github.io/quiz-card)
+Live Demo: [Open FullStack Interview Prep Cards](https://RomanHasiuk.github.io/Quiz-card)
 My GitHub Profile: Visit [RomanHasiuk's GitHub](https://github.com/RomanHasiuk)
 
 Project Description
